@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Footprint Check | Carbon calculator for teens</title>
+<meta name="description" content="Estimate your carbon footprint from your last 24 hours and see how it compares with the world.">
+<style>
+:root{
+  --bg:#f4f2ea; --surface:#fff; --ink:#142320; --ink2:#46574f; --ink3:#7a8881; --line:#e3e0d3; --line2:#efede4;
+  --brand:#0f5c4a; --brand-d:#093d31; --brand-m:#14806a; --brand-l:#e2f1ea; --sun:#f3b63f;
+  --good:#1d9a6c; --mid:#e0a020; --bad:#d9503f;
+  --c-transport:#3b6fd4; --c-food:#e58a2b; --c-home:#d9503f; --c-devices:#7d5bc2; --c-shopping:#1d9a8a; --c-flights:#c4417f; --c-shared:#a9b0b7;
+  --r:18px; --shadow:0 1px 2px rgba(20,35,32,.05),0 6px 24px rgba(20,35,32,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid #7ec5a9;outline-offset:2px}
+h1,h2,h3{line-height:1.2;margin:0;letter-spacing:-.01em}
+.muted{color:var(--ink2)}.small{font-size:.875rem}.tiny{font-size:.78rem}
+
+/* ---------- top bar ---------- */
+#top{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topin{max-width:1000px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--brand-d);letter-spacing:-.02em;white-space:nowrap}
+.brand svg{display:block}
+.secs{display:flex;gap:6px;margin-left:auto;flex:1;max-width:560px}
+.sec{flex:1;font-size:.74rem;font-weight:600;color:var(--ink3);text-align:center}
+.sec .bar{height:6px;border-radius:6px;background:var(--line);margin-bottom:5px;overflow:hidden}
+.sec .bar i{display:block;height:100%;width:0;background:var(--brand-m);border-radius:6px;transition:width .4s}
+.sec.on{color:var(--brand-d)}
+.sec.done .bar i{width:100%}
+@media(max-width:640px){.sec span{display:none}.sec .bar{margin:0}.topin{padding:12px 16px}}
+
+main{max-width:1000px;margin:0 auto;padding:28px 20px 120px}
+.wrap{max-width:760px;margin:0 auto}
+
+/* ---------- intro ---------- */
+.hero-intro{background:linear-gradient(135deg,var(--brand-d),var(--brand) 55%,var(--brand-m));color:#fff;border-radius:28px;padding:48px 44px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.hero-intro::before,.hero-intro::after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.06)}
+.hero-intro::before{width:380px;height:380px;right:-120px;top:-140px}
+.hero-intro::after{width:240px;height:240px;right:90px;bottom:-130px}
+.hero-intro>*{position:relative;z-index:1}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.hero-intro h1{font-size:clamp(2rem,5vw,3.1rem);margin:10px 0 14px;max-width:16em}
+.hero-intro p{font-size:1.12rem;opacity:.92;max-width:34em;margin:0 0 26px}
+.btn{background:var(--brand);color:#fff;border:0;border-radius:14px;padding:14px 26px;font-weight:700;font-size:1rem;transition:transform .1s,background .15s,box-shadow .15s;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.btn:hover{background:var(--brand-d)}.btn:active{transform:translateY(1px)}
+.btn.sun{background:var(--sun);color:#2c2200}.btn.sun:hover{background:#ffc652}
+.btn.ghost{background:#fff;color:var(--brand-d);border:1.5px solid var(--line);box-shadow:none}
+.btn.ghost:hover{border-color:var(--brand);background:var(--brand-l)}
+.btn.lg{padding:16px 32px;font-size:1.08rem}
+.points{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:18px}
+.point{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.point .ic{font-size:1.6rem;display:block;margin-bottom:6px}
+.point b{display:block;margin-bottom:2px}
+.point span{color:var(--ink2);font-size:.92rem}
+
+/* ---------- question pages ---------- */
+.pagehead{display:flex;gap:16px;align-items:center;margin-bottom:22px}
+.pageic{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;font-size:2rem;background:var(--brand-l);flex:none}
+.kicker{font-size:.76rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--brand-m)}
+.pagehead h1{font-size:clamp(1.6rem,4vw,2.1rem);margin:2px 0 4px}
+.pagehead p{margin:0;color:var(--ink2)}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:14px;box-shadow:var(--shadow)}
+.qcard .qt{font-weight:700;font-size:1.05rem;margin-bottom:2px}
+.qcard .help{color:var(--ink2);font-size:.9rem;margin-bottom:12px}
+.qcard .qt+.chips,.qcard .qt+.tiles,.qcard .qt+.num,.qcard .qt+.scalebox{margin-top:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 16px;transition:all .12s}
+.chip:hover{border-color:var(--brand-m);background:var(--brand-l)}
+.chip[aria-checked=true]{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border:1.5px solid var(--line);background:#fff;border-radius:16px;text-align:center;font-size:.92rem;transition:all .12s}
+.tile .ti{font-size:1.9rem;line-height:1}
+.tile:hover{border-color:var(--brand-m);background:var(--brand-l)}
+.tile[aria-checked=true]{border-color:var(--brand);background:var(--brand-l);box-shadow:inset 0 0 0 1.5px var(--brand);font-weight:700;color:var(--brand-d)}
+.scalebox{background:#f3f6f8;border-radius:14px;padding:10px}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.scale .chip{border-radius:12px;padding:10px 2px;text-align:center;font-size:.82rem;line-height:1.2;display:flex;flex-direction:column;gap:3px;align-items:center;border-color:transparent;background:#fff}
+.scale .chip .g{font-size:.7rem;letter-spacing:-.1em;color:var(--ink3)}
+.scale .chip[aria-checked=true]{background:#24405f;color:#fff}
+.scale .chip[aria-checked=true] .g{color:#fff}
+.scalecap{font-size:.78rem;color:var(--ink3);text-align:center;margin-top:8px}
+.num{display:flex;align-items:center;gap:18px}
+.num input[type=range]{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:30px;background:transparent;margin:0;--p:0%}
+.num input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:8px;background:linear-gradient(to right,var(--brand-m) var(--p),#e3e0d3 var(--p))}
+.num input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid var(--brand);margin-top:-10px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.num input[type=range]::-moz-range-track{height:8px;border-radius:8px;background:#e3e0d3}
+.num input[type=range]::-moz-range-progress{height:8px;border-radius:8px;background:var(--brand-m)}
+.num input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid var(--brand)}
+.numbox{display:flex;align-items:baseline;gap:6px;background:var(--brand-l);border-radius:14px;padding:6px 12px;min-width:140px;justify-content:center}
+.numbox input{width:64px;border:0;background:transparent;font:inherit;font-size:1.5rem;font-weight:800;color:var(--brand-d);text-align:right;padding:0;-moz-appearance:textfield}
+.numbox input::-webkit-outer-spin-button,.numbox input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.numbox .unit{font-size:.82rem;color:var(--ink2);white-space:nowrap}
+@media(max-width:560px){.num{flex-direction:column;align-items:stretch;gap:8px}.numbox{align-self:flex-start}.scale .chip{font-size:.74rem}.pageic{width:52px;height:52px;font-size:1.6rem;border-radius:16px}}
+.fact{display:flex;gap:12px;align-items:flex-start;background:#fff9e8;border:1px solid #f1e1ae;border-radius:16px;padding:14px 16px;margin:6px 0 14px;font-size:.92rem;color:#5a4a12}
+.fact b{color:#3d3006}.fact .fi{font-size:1.3rem;line-height:1.2}
+.navbar{position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(244,242,234,.94);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 20px}
+.navin{max-width:760px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.navin .pg{font-size:.82rem;color:var(--ink3)}
+
+/* ---------- food builder ---------- */
+.meal{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.mealhead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.mealhead .mi{font-size:1.6rem}
+.mealhead h3{font-size:1.15rem}
+.mealhead .sub{margin-left:auto;font-size:.85rem;font-weight:700;color:var(--ink2);background:var(--line2);padding:3px 10px;border-radius:999px;white-space:nowrap}
+.search{position:relative}
+.search input{width:100%;font:inherit;padding:13px 14px 13px 42px;border:2px solid var(--line);border-radius:14px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%237a8881' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='8.5' cy='8.5' r='6'/%3E%3Cpath d='M13 13l5 5'/%3E%3C/svg%3E") 14px center no-repeat}
+.search input:focus{outline:0;border-color:var(--brand-m);box-shadow:0 0 0 4px rgba(20,128,106,.15)}
+.dd{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(20,35,32,.18);z-index:20;overflow:hidden;display:none}
+.dd.open{display:block}
+.opt{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:#fff;padding:10px 14px;border-bottom:1px solid var(--line2)}
+.opt:last-child{border-bottom:0}
+.opt:hover,.opt.act{background:var(--brand-l)}
+.opt .nm{flex:1}
+.opt .sv{color:var(--ink3);font-size:.82rem}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.dot.l{background:var(--good)}.dot.m{background:var(--mid)}.dot.h{background:var(--bad)}
+.ddcust{padding:12px 14px}
+.ddcust p{margin:0 0 8px;font-size:.9rem}
+.ddcust .chips{gap:6px}.ddcust .chip{font-size:.85rem;padding:7px 12px}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px;align-items:center}
+.quick .ql{font-size:.78rem;color:var(--ink3);margin-right:2px}
+.qk{border:1px dashed #c8d3cd;background:#fff;border-radius:999px;padding:4px 11px;font-size:.82rem;color:var(--ink2)}
+.qk:hover{border-style:solid;border-color:var(--brand-m);background:var(--brand-l);color:var(--brand-d)}
+.items{margin-top:10px}
+.item{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line2)}
+.item:first-child{border-top:0}
+.item .nm{font-weight:600;line-height:1.25}
+.item .sv{display:block;font-weight:400;color:var(--ink3);font-size:.8rem}
+.stepper{display:flex;align-items:center;gap:2px;background:var(--line2);border-radius:999px;padding:2px}
+.stepper button{width:30px;height:30px;border-radius:50%;border:0;background:#fff;font-weight:800;font-size:1.05rem;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.stepper button:hover{background:var(--brand-l)}
+.stepper span{min-width:34px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.item .kg{font-size:.85rem;color:var(--ink2);min-width:64px;text-align:right;font-variant-numeric:tabular-nums}
+.item .rm{border:0;background:transparent;color:var(--ink3);font-size:1.2rem;width:30px;height:30px;border-radius:50%}
+.item .rm:hover{background:#fde8e5;color:var(--bad)}
+.empty{color:var(--ink3);font-size:.9rem;padding:8px 2px}
+@media(max-width:560px){.item{grid-template-columns:1fr auto auto}.item .kg{display:none}}
+.foodtotal{display:flex;align-items:center;gap:14px;background:var(--brand-d);color:#fff;border-radius:var(--r);padding:16px 20px;margin-bottom:14px}
+.foodtotal b{font-size:1.5rem;font-variant-numeric:tabular-nums}
+.foodtotal span{opacity:.85;font-size:.9rem}
+.legendmini{display:flex;gap:14px;font-size:.78rem;color:var(--ink3);margin:2px 0 14px;flex-wrap:wrap}
+.legendmini .dot{display:inline-block;margin-right:5px;vertical-align:0}
+
+/* ---------- results ---------- */
+.rhero{background:linear-gradient(135deg,var(--brand-d),var(--brand) 60%,var(--brand-m));color:#fff;border-radius:28px;padding:34px 36px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.rhero::before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(255,255,255,.06);right:-140px;top:-170px}
+.rhero>*{position:relative}
+.rtitle{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.rhero .eyebrow{margin-bottom:4px}
+.rbig{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:6px 0 0}
+.rbig .n{font-size:clamp(3.6rem,10vw,5.6rem);font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.rbig .u{font-size:1.15rem;opacity:.9}
+.rrange{opacity:.8;font-size:.92rem;margin-top:4px}
+.rstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:26px}
+.rstat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px 16px}
+.rstat b{display:block;font-size:1.7rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.rstat span{font-size:.82rem;opacity:.85}
+.switch{display:flex;align-items:center;gap:10px;font-size:.84rem;background:rgba(255,255,255,.12);border-radius:999px;padding:6px 14px 6px 8px;cursor:pointer;user-select:none}
+.switch input{position:absolute;opacity:0}
+.switch i{width:38px;height:22px;border-radius:22px;background:rgba(255,255,255,.3);position:relative;flex:none;transition:background .15s}
+.switch i::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch input:checked+i{background:var(--sun)}
+.switch input:checked+i::after{transform:translateX(16px)}
+.switch input:focus-visible+i{outline:3px solid #fff}
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:5px;margin:20px 0 16px;overflow-x:auto;box-shadow:var(--shadow);position:sticky;top:62px;z-index:20}
+.tab{flex:1;white-space:nowrap;border:0;background:transparent;border-radius:12px;padding:10px 16px;font-weight:600;color:var(--ink2)}
+.tab:hover{background:var(--line2)}
+.tab[aria-selected=true]{background:var(--brand);color:#fff}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h2{font-size:1.3rem;margin-bottom:4px}
+.card .cl{color:var(--ink2);font-size:.92rem;margin:0 0 16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.rhero{padding:26px 22px}.tabs{top:56px}}
+.insight{display:flex;gap:16px;align-items:flex-start}
+.insight .ib{font-size:2rem;width:56px;height:56px;border-radius:16px;display:grid;place-items:center;flex:none}
+.insight h3{font-size:1.1rem;margin-bottom:4px}
+
+.cmp .row{display:grid;grid-template-columns:150px 1fr 64px;gap:12px;align-items:center;margin:10px 0}
+.cmp .nm{font-size:.92rem;font-weight:600;text-align:right}
+.cmp .tr{height:30px;background:var(--line2);border-radius:8px;overflow:hidden}
+.cmp .fl{height:100%;border-radius:8px;animation:grow .9s cubic-bezier(.2,.8,.2,1)}
+.cmp .v{font-weight:700;font-variant-numeric:tabular-nums}
+.cmp .row.you .nm,.cmp .row.you .v{color:var(--brand-d)}
+@keyframes grow{from{width:0}}
+@media(max-width:560px){.cmp .row{grid-template-columns:96px 1fr 52px}}
+
+.equiv{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.eq{background:#f7f6f0;border-radius:16px;padding:16px}
+.eq .e{font-size:1.6rem;display:block}
+.eq b{display:block;font-size:1.5rem;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.eq span{font-size:.86rem;color:var(--ink2)}
+
+.earths{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.earthicon{position:relative;width:54px;height:54px}
+.earthicon .base,.earthicon .col{position:absolute;left:0;top:0;height:54px;overflow:hidden}
+.earthicon svg{display:block}
+
+.donutwrap{display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:center}
+@media(max-width:700px){.donutwrap{grid-template-columns:1fr;justify-items:center}}
+.donut{width:220px;height:220px}
+.donut .dn{font-size:30px;font-weight:800;fill:var(--ink);letter-spacing:-1px}
+.donut .dl{font-size:10.5px;fill:var(--ink3)}
+.donut circle{animation:fade .8s}
+@keyframes fade{from{opacity:0}}
+.lg{width:100%}
+.lrow{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line2)}
+.lrow:first-child{border-top:0}
+.lrow i{width:14px;height:14px;border-radius:5px}
+.lrow .t{font-weight:700;font-variant-numeric:tabular-nums}
+.lrow .p{color:var(--ink3);font-size:.85rem;min-width:40px;text-align:right}
+.catbars .cb{margin:14px 0}
+.catbars .top{display:flex;justify-content:space-between;font-weight:600;margin-bottom:5px}
+.catbars .tr{height:12px;background:var(--line2);border-radius:12px;overflow:hidden}
+.catbars .fl{height:100%;border-radius:12px;animation:grow .9s cubic-bezier(.2,.8,.2,1)}
+.catbars .tip{font-size:.85rem;color:var(--ink2);margin-top:5px}
+.foodrow{display:grid;grid-template-columns:minmax(0,1fr) 120px 62px;gap:12px;align-items:center;margin:9px 0;font-size:.92rem}
+.foodrow .tr{height:12px;background:var(--line2);border-radius:12px;overflow:hidden}
+.foodrow .fl{height:100%;border-radius:12px;background:var(--c-food);animation:grow .9s}
+.foodrow .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+@media(max-width:560px){.foodrow{grid-template-columns:minmax(0,1fr) 70px 56px}}
+
+.refkey{display:flex;gap:18px;font-size:.84rem;flex-wrap:wrap;margin:0 0 10px;color:var(--ink2)}
+.refkey b{display:inline-block;width:20px;border-top:2.5px dashed;vertical-align:middle;margin-right:6px}
+.country .row{display:grid;grid-template-columns:130px 1fr 46px;align-items:center;gap:10px;padding:1px 0}
+.country .nm{font-size:.86rem;text-align:right}
+.country .tr{height:24px;position:relative}
+.country .fl{position:absolute;left:0;top:4px;height:16px;border-radius:5px;background:#bdc9c3;animation:grow .9s cubic-bezier(.2,.8,.2,1)}
+.country .row.you .fl{background:var(--brand-m);top:2px;height:20px}
+.country .row.you.alt .fl{background:#8fd0b9}
+.country .row.you .nm,.country .row.you .v{font-weight:800;color:var(--brand-d)}
+.country .v{font-size:.82rem;font-variant-numeric:tabular-nums}
+.ref{position:absolute;top:0;bottom:0;border-left:2px dashed}
+.ref.w{border-color:#3b6fd4}.ref.s{border-color:#d9503f}
+@media(max-width:560px){.country .row{grid-template-columns:92px 1fr 40px}}
+.earthchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.ec{background:#f7f6f0;border-radius:12px;padding:8px 12px;font-size:.86rem}
+.ec b{font-size:1.05rem;display:block}
+
+.wisum{background:var(--brand-d);color:#fff;border-radius:var(--r);padding:20px 24px;margin-bottom:16px;position:sticky;top:122px;z-index:15;box-shadow:var(--shadow)}
+.wisum .rw{display:flex;gap:22px;flex-wrap:wrap;align-items:baseline}
+.wisum .big{font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+.wisum .pill{background:var(--sun);color:#2c2200;border-radius:999px;padding:2px 12px;font-weight:800;font-size:.9rem}
+.wisum small{opacity:.8}
+@media(max-width:760px){.wisum{top:116px;padding:14px 16px}.wisum .big{font-size:1.5rem}}
+.wi{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .12s}
+.wi:hover{border-color:var(--brand-m)}
+.wi:has(input:checked){border-color:var(--brand);background:var(--brand-l)}
+.wi input{width:22px;height:22px;accent-color:var(--brand)}
+.wi .wl{font-weight:600}
+.wi .wb{height:6px;border-radius:6px;background:var(--line);margin-top:8px;overflow:hidden;max-width:260px}
+.wi .wb i{display:block;height:100%;background:var(--good);border-radius:6px}
+.wi .sv{font-weight:800;color:var(--good);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.wi .sv small{display:block;font-weight:500;color:var(--ink3)}
+
+.note{background:#fff9e8;border:1px solid #f1e1ae;border-radius:14px;padding:14px 16px;font-size:.92rem;color:#5a4a12}
+table.f{border-collapse:collapse;font-size:.88rem;width:100%}
+table.f td,table.f th{border-bottom:1px solid var(--line2);padding:8px 8px;text-align:left;vertical-align:top}
+table.f th{color:var(--ink3);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.badge{display:inline-flex;gap:6px;align-items:center;background:var(--brand-l);color:var(--brand-d);border-radius:999px;padding:4px 12px;font-size:.8rem;font-weight:700}
+@media print{
+  #top,.navbar,.tabs,.actions,.switch,.noprint,.wisum{display:none!important}
+  body{background:#fff;font-size:12px}.panel{display:block!important}.card,.rhero{break-inside:avoid;box-shadow:none}
+  .rhero{background:#0f5c4a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header id="top"></header>
+<main id="stage"></main>
+<div id="navhost"></div>
+
+<script>
+/* ============================================================
+   FACTORS. kg CO2-equivalent, rounded, Australian context (NSW grid).
+   ============================================================ */
+const GRID = 0.66;          // kg CO2e per kWh electricity
+const SCHOOL_WEEKS = 40;
+const PT = 0.07;            // kg per km, average bus/train/ferry
+const SHARED_KG = 3000;     // roads, hospitals, schools, shops, government
+const BUDGET_T = 2.0;       // fair-share tonnes per person per year (~1.5 C path)
+const RANGE = 0.30;
+const TREE_KG = 22, CAR_AVG = 0.19;
+const FLIGHT_KG = {fShort:250, fLong:600, fAsia:1000, fFar:3500};
+const SCALE = [{v:0.4,l:'Much less',g:'▼▼'},{v:0.7,l:'Less',g:'▼'},{v:1,l:'About the same',g:'●'},{v:1.3,l:'More',g:'▲'},{v:1.7,l:'Much more',g:'▲▲'}];
+
+const MODES = [
+  {id:'walk',icon:'🚶',label:'Walk',kg:0},{id:'bike',icon:'🚲',label:'Bike',kg:0},
+  {id:'escooter',icon:'🛴',label:'E-scooter or e-bike',kg:0.02},{id:'bus',icon:'🚌',label:'Bus',kg:0.10},
+  {id:'train',icon:'🚆',label:'Train, metro or light rail',kg:0.04},{id:'ferry',icon:'⛴️',label:'Ferry',kg:0.12},
+  {id:'car',icon:'🚗',label:'Car',kg:null},{id:'moto',icon:'🏍️',label:'Motorbike or scooter',kg:0.11},
+];
+const CARS = [
+  {id:'petrolS',label:'Small petrol car',kg:0.15},{id:'petrolM',label:'Medium petrol car',kg:0.19},
+  {id:'petrolL',label:'Large petrol SUV or ute',kg:0.26},{id:'diesel',label:'Diesel 4WD or ute',kg:0.27},
+  {id:'hybrid',label:'Hybrid',kg:0.11},{id:'phev',label:'Plug-in hybrid',kg:0.08},
+  {id:'ev',label:'Electric car',kg:0.09},{id:'none',label:'No family car (lifts, rideshare)',kg:0.19},
+];
+const HOT_WATER = [
+  {id:'elec',label:'Electric',kg:0.023},{id:'gas',label:'Gas',kg:0.009},
+  {id:'heatpump',label:'Heat pump or solar',kg:0.005},{id:'unsure',label:'Not sure',kg:0.015},
+];
+const DEVICES = {
+  dPhone:{kwh:5,made:25},dTablet:{kwh:12,made:18},dLaptop:{kwh:40,made:50},dConsole:{kwh:15,made:40},dWear:{kwh:3,made:8}
+};
+
+/* ============================================================
+   FOOD DATABASE. name | serving | kg CO2e per serving | flags | search words
+   flags: r = beef/lamb, m = other meat or fish (r implies m)
+   ============================================================ */
+const FOOD_RAW = `
+# --- breads, cereals, bakery
+Cornflakes or puffed cereal|bowl (40 g)|0.12||cereal,breakfast,corn flakes,rice bubbles
+Wheat biscuits|2 biscuits|0.12||cereal,weetbix,weet-bix,breakfast
+Muesli or granola|bowl (60 g)|0.2||cereal,breakfast
+Chocolate or sugary cereal|bowl (40 g)|0.2||coco pops,froot loops,cereal,breakfast
+Porridge made with water|bowl|0.15||oats,oatmeal,breakfast
+Porridge made with dairy milk|bowl|0.55||oats,oatmeal,breakfast
+Toast, white|1 slice|0.06||bread
+Toast, wholemeal or multigrain|1 slice|0.06||bread,brown
+Sourdough toast|1 slice|0.08||bread
+Bagel|1 bagel|0.2||
+English muffin|1 muffin|0.12||
+Crumpets|2 crumpets|0.15||
+Croissant|1 croissant|0.45||pastry,butter
+Pancakes|2 pancakes|0.4||hotcakes,breakfast
+Waffle|1 waffle|0.3||breakfast
+French toast|2 slices|0.7||eggs,breakfast
+Hash brown|1 hash brown|0.15||potato,breakfast
+Muffin (blueberry or choc chip)|1 muffin|0.5||cake
+Pastry or danish|1 pastry|0.55||
+Bread roll|1 roll|0.1||bun
+Garlic bread|2 slices|0.2||
+Wrap or tortilla (plain)|1 wrap|0.12||
+Pita or flatbread|1 piece|0.1||
+Naan bread|1 naan|0.25||
+Crackers|5 crackers|0.06||biscuits
+Rice cakes|2 cakes|0.05||
+# --- spreads and sauces
+Butter|thin spread|0.12||
+Margarine|thin spread|0.03||
+Peanut butter|1 tbsp|0.08||
+Vegemite|thin spread|0.01||
+Jam or honey|1 tbsp|0.04||
+Chocolate hazelnut spread|1 tbsp|0.15||nutella
+Avocado|half|0.4||
+Cream cheese|1 tbsp|0.2||
+Hummus|2 tbsp|0.1||dip
+Maple or golden syrup|1 tbsp|0.05||
+Tomato sauce|1 tbsp|0.02||ketchup
+Mayonnaise|1 tbsp|0.1||
+BBQ sauce|1 tbsp|0.03||barbecue
+Sweet chilli sauce|1 tbsp|0.03||
+Gravy|1 ladle|0.15||
+Salad dressing|1 tbsp|0.1||
+# --- eggs
+Egg, fried or scrambled|1 egg|0.5||eggs,breakfast
+Egg, boiled or poached|1 egg|0.4||eggs,breakfast
+Omelette (2 eggs and cheese)|1 omelette|1.3||eggs,breakfast
+# --- bacon, ham, sausages
+Bacon|2 rashers|0.9|m|pork,breakfast
+Ham slices|2 slices|0.4|m|pork,deli
+Sausages, pork|2 sausages|1.0|m|snags,snag
+Sausages, beef|2 sausages|1.5|r|snags,snag
+Sausage in bread (sausage sizzle)|1 sausage|0.9|m|bbq,snag
+Salami or chorizo|3 slices|0.5|m|deli
+# --- beef and lamb
+Beef steak|200 g|6.0|r|rump,sirloin,eye fillet,scotch,meat
+Beef mince, cooked|120 g|3.6|r|ground beef,meat
+Roast beef|150 g|4.5|r|meat
+Beef strips (stir-fry)|120 g|3.6|r|meat
+Beef meatballs|4 meatballs|2.0|r|meat
+Beef burger patty|1 patty|1.8|r|hamburger,meat
+Beef ribs|3 ribs|4.0|r|meat
+Beef jerky|30 g|1.5|r|meat,snack
+Corned beef|2 slices|1.2|r|silverside,meat
+Beef curry with rice|1 plate|4.0|r|meat
+Beef stew or casserole|1 serve|3.8|r|meat
+Beef stroganoff|1 serve|3.8|r|meat
+Beef and veg stir-fry with rice|1 plate|3.0|r|meat
+Lamb chops|2 chops|4.5|r|meat
+Lamb cutlets|3 cutlets|4.0|r|meat
+Roast lamb|150 g|4.5|r|meat
+Lamb curry with rice|1 plate|4.0|r|meat
+Lamb kebab or doner|1 kebab|3.5|r|gyros,meat
+# --- chicken and turkey
+Chicken breast|150 g|1.0|m|meat,poultry
+Chicken thigh|1 thigh|0.9|m|meat,poultry
+Chicken drumsticks|2 drumsticks|1.0|m|meat,poultry
+Roast chicken|150 g|1.2|m|meat,poultry
+Fried chicken (takeaway)|3 pieces|2.0|m|kfc,poultry
+Chicken nuggets|6 nuggets|1.0|m|mcnuggets,poultry
+Chicken schnitzel|1 schnitzel|1.4|m|crumbed,poultry
+Chicken parmigiana|1 parma|2.4|m|parmi,chicken parma
+Chicken burger|1 burger|1.6|m|poultry
+Chicken wrap|1 wrap|1.3|m|poultry
+Chicken curry with rice|1 plate|1.7|m|poultry
+Butter chicken with rice|1 plate|2.2|m|curry,poultry
+Chicken stir-fry with rice|1 plate|1.6|m|poultry
+Chicken fried rice|1 plate|1.5|m|poultry
+Chicken noodle soup|1 bowl|0.8|m|poultry
+Chicken salad|1 bowl|1.3|m|poultry
+Caesar salad (chicken and bacon)|1 bowl|1.9|m|poultry
+Chicken skewers or satay|3 skewers|1.2|m|poultry
+Chicken pasta (creamy sauce)|1 plate|2.0|m|poultry
+Turkey slices|3 slices|0.3|m|deli
+# --- pork
+Pork chop|1 chop|1.6|m|meat
+Roast pork|150 g|1.8|m|meat
+Pork belly|150 g|2.2|m|meat
+Pork ribs|4 ribs|2.5|m|meat
+Pulled pork burger|1 burger|2.0|m|meat
+Pork fried rice|1 plate|1.6|m|meat
+Pork or veg dumplings|5 dumplings|1.0|m|gyoza,dim sim
+Spaghetti carbonara|1 plate|1.8|m|pasta,bacon
+# --- fish and seafood
+Salmon fillet|150 g|1.8|m|fish
+Tuna, canned|1 small can|0.9|m|fish
+Fish fillet, grilled|150 g|1.2|m|barramundi,fish
+Fish fillet, battered or crumbed|1 piece|1.2|m|fish and chips
+Fish fingers|4 fingers|0.8|m|fish
+Fish burger|1 burger|1.6|m|fish
+Prawns|6 prawns|1.5|m|shrimp,seafood
+Calamari|1 serve|0.8|m|squid,seafood
+Sardines, canned|1 can|0.4|m|fish
+Sushi roll (salmon, tuna or chicken)|6 pieces|0.8|m|fish,rice
+Sushi roll (veg or avocado)|6 pieces|0.4||rice
+Salmon nigiri|2 pieces|0.4|m|sushi,fish
+Oysters|6 oysters|0.2|m|seafood
+Crab or lobster|1 serve|2.0|m|seafood
+# --- plant proteins
+Tofu|100 g|0.3||soy
+Tempeh|100 g|0.3||soy
+Baked beans|half can|0.25||legumes
+Lentils or dal|1 serve|0.2||legumes
+Chickpeas|half can|0.2||legumes
+Kidney or black beans|half can|0.2||legumes
+Falafel|3 falafel|0.4||chickpea
+Veggie burger patty|1 patty|0.5||plant-based
+Plant-based mince|120 g|0.6||vegan,vegetarian
+Plant-based sausages|2 sausages|0.6||vegan,vegetarian
+Edamame|1 cup|0.2||soy
+Mixed nuts|handful (30 g)|0.2||snack
+Peanuts|handful (30 g)|0.15||snack
+Almonds|handful (30 g)|0.3||snack
+# --- dairy and alternatives
+Milk, dairy|glass (250 mL)|0.5||
+Milk, soy|glass (250 mL)|0.2||
+Milk, oat|glass (250 mL)|0.15||
+Milk, almond|glass (250 mL)|0.15||
+Yoghurt|tub (170 g)|0.4||yogurt
+Greek yoghurt|tub (170 g)|0.55||yogurt
+Dairy-free yoghurt|tub (170 g)|0.2||yogurt,vegan
+Cheese|30 g|0.6||
+Cheese slice|1 slice|0.35||
+Cheese stick|1 stick|0.3||snack
+Cream|2 tbsp|0.25||
+Ice cream|2 scoops|0.7||dessert
+Custard or pudding|1 cup|0.5||dessert
+# --- fruit
+Banana|1 banana|0.1||fruit
+Apple|1 apple|0.07||fruit
+Orange|1 orange|0.1||fruit
+Mandarin|1 mandarin|0.05||fruit
+Pear|1 pear|0.08||fruit
+Grapes|handful|0.1||fruit
+Strawberries|1 cup|0.15||fruit,berries
+Blueberries|1 cup|0.25||fruit,berries
+Watermelon|1 slice|0.15||fruit
+Rockmelon|1 slice|0.1||fruit,cantaloupe
+Mango|1 mango|0.2||fruit
+Pineapple|1 cup|0.15||fruit
+Peach or nectarine|1 fruit|0.07||fruit
+Plum|1 plum|0.05||fruit
+Kiwi fruit|1 kiwi|0.05||fruit
+Cherries|handful|0.2||fruit
+Dried fruit|small box|0.15||sultanas,apricots,raisins
+Fruit salad|1 cup|0.2||fruit
+Canned fruit|1 cup|0.15||fruit
+Fruit snack bar or roll|1 bar|0.1||fruit
+# --- vegetables and salads
+Garden salad|1 bowl|0.4||lettuce,vegetables
+Greek salad|1 bowl|0.9||feta,vegetables
+Coleslaw|1 serve|0.2||vegetables
+Potato salad|1 serve|0.4||vegetables
+Pasta salad|1 serve|0.5||
+Cherry tomatoes|handful|0.15||vegetables,tomato
+Carrot or cucumber sticks|1 serve|0.05||vegetables
+Broccoli|1 serve|0.1||vegetables
+Mixed vegetables, steamed|1 serve|0.2||veg,vegetables
+Roast vegetables|1 serve|0.3||veg,vegetables
+Stir-fried vegetables|1 serve|0.3||veg,vegetables
+Corn cob|1 cob|0.15||vegetables
+Peas|half cup|0.1||vegetables
+Mushrooms|1 serve|0.15||vegetables
+Spinach, cooked|1 serve|0.1||vegetables
+Pumpkin|1 serve|0.1||vegetables
+Potato, baked or boiled|1 potato|0.1||vegetables
+Mashed potato|1 serve|0.25||vegetables
+Sweet potato|1 serve|0.1||vegetables
+Hot chips|small serve|0.5||fries,potato
+Potato wedges|1 serve|0.5||potato
+Sweet potato fries|1 serve|0.4||
+Potato gems|1 serve|0.4||tater tots
+Onion rings|1 serve|0.3||
+# --- rice, pasta, noodles
+White rice|1 cup cooked|0.35||
+Brown rice|1 cup cooked|0.3||
+Fried rice (vegetable)|1 plate|0.9||
+Couscous|1 cup|0.1||
+Quinoa|1 cup|0.2||
+Pasta with tomato sauce|1 plate|0.6||spaghetti
+Pasta with pesto|1 plate|0.9||spaghetti
+Mac and cheese|1 bowl|1.5||macaroni
+Spaghetti bolognese|1 plate|3.0|r|pasta,mince,meat,spag bol
+Lasagne|1 slice|3.2|r|pasta,meat
+Vegetable lasagne|1 slice|1.5||pasta
+Instant noodles|1 packet|0.4||2 minute,maggi
+Rice noodles|1 bowl|0.3||
+Noodle stir-fry (vegetable)|1 plate|0.9||
+Pad Thai (chicken)|1 plate|1.5|m|noodles,poultry
+Pho (beef noodle soup)|1 bowl|2.5|r|vietnamese,noodles
+Ramen (pork)|1 bowl|2.2|m|noodles
+Laksa (chicken or prawn)|1 bowl|1.6|m|noodles
+Vegetable curry with rice|1 plate|0.9||vegan,vegetarian
+# --- mexican
+Beef tacos|2 tacos|2.6|r|mexican,meat
+Chicken tacos|2 tacos|1.4|m|mexican
+Bean tacos|2 tacos|0.8||mexican,vegetarian
+Beef burrito|1 burrito|3.5|r|mexican,meat
+Bean burrito|1 burrito|1.0||mexican,vegetarian
+Nachos with beef mince|1 serve|2.8|r|mexican,meat
+Chicken quesadilla|1 quesadilla|1.8|m|mexican
+Chilli con carne|1 bowl|3.4|r|mexican,meat
+# --- takeaway and fast food
+Cheeseburger (fast food)|1 burger|3.2|r|hamburger,maccas,mcdonalds
+Double cheeseburger or Big Mac|1 burger|4.5|r|hamburger,maccas,mcdonalds
+Hamburger with the lot|1 burger|4.0|r|takeaway,meat
+Hot dog|1 hot dog|1.6|m|frankfurt
+Meat pie|1 pie|2.4|r|pie,meat
+Sausage roll|1 roll|1.8|m|
+Pizza slice (cheese)|1 slice|0.6||
+Pizza slice (pepperoni or meat)|1 slice|0.9|m|salami,ham
+Pizza slice (vegetarian)|1 slice|0.6||
+Chicken kebab or souvlaki|1 wrap|1.9|m|poultry
+Falafel wrap|1 wrap|0.8||vegetarian
+Spring rolls|2 rolls|0.4||
+Cheese toastie|1 toastie|1.2||jaffle
+Ham and cheese toastie|1 toastie|1.6|m|jaffle
+Corn dog|1 corn dog|1.3|m|
+Veggie burger|1 burger|1.0||vegetarian
+# --- sandwiches
+Cheese and tomato sandwich|1 sandwich|1.0||
+Ham sandwich|1 sandwich|1.0|m|
+Ham and cheese sandwich|1 sandwich|1.6|m|
+Chicken salad sandwich|1 sandwich|1.2|m|poultry
+Tuna sandwich|1 sandwich|1.0|m|fish
+Egg sandwich|1 sandwich|0.9||
+Salami sandwich|1 sandwich|1.2|m|
+Roast beef sandwich|1 sandwich|2.5|r|meat
+Salad sandwich|1 sandwich|0.4||vegetarian
+Vegemite sandwich|1 sandwich|0.2||
+Peanut butter sandwich|1 sandwich|0.3||
+Jam sandwich|1 sandwich|0.15||
+Cheese and Vegemite sandwich|1 sandwich|0.8||
+Sub roll, chicken|6 inch|1.6|m|subway,poultry
+Sub roll, beef or meatball|6 inch|3.0|r|subway,meat
+Sub roll, tuna|6 inch|1.3|m|subway,fish
+Sub roll, salad|6 inch|0.8||subway,vegetarian
+# --- snacks and sweets
+Potato chips (packet)|small packet|0.25||crisps,snack
+Corn chips|handful|0.15||nachos,snack
+Popcorn|1 cup|0.1||snack
+Pretzels|handful|0.1||snack
+Chocolate bar|1 bar (50 g)|0.9||snack,sweets
+Chocolate block|4 squares|0.4||snack,sweets
+Lollies|handful|0.1||sweets,candy,snack
+Muesli bar|1 bar|0.15||snack
+Protein bar|1 bar|0.5||snack
+Biscuits, plain|2 biscuits|0.15||cookies,snack
+Chocolate biscuits|2 biscuits|0.3||tim tam,snack
+Cookie|1 cookie|0.4||biscuit,snack
+Cake|1 slice|0.8||dessert
+Cupcake|1 cupcake|0.6||dessert
+Donut|1 donut|0.5||doughnut,snack
+Brownie|1 piece|0.8||dessert
+Apple pie|1 slice|0.7||dessert
+Icy pole|1 icy pole|0.05||snack,ice block
+Ice cream bar or cone|1 bar|0.6||dessert
+Cheese and crackers|1 snack pack|0.7||snack
+Rice crackers|small handful|0.1||snack
+Trail mix|handful|0.3||nuts,snack
+# --- drinks
+Water, tap|1 glass|0||drink
+Water, bottled|500 mL|0.15||drink
+Sparkling water|1 can|0.2||drink,soda
+Soft drink (can)|375 mL|0.35||coke,soda,pepsi,fanta,sprite,drink
+Soft drink (bottle)|600 mL|0.5||coke,soda,pepsi,fanta,sprite,drink
+Diet soft drink|375 mL can|0.3||zero,soda,drink
+Energy drink|1 can|0.4||red bull,monster,v,drink
+Sports drink|600 mL|0.4||gatorade,powerade,drink
+Orange juice|1 glass|0.35||drink
+Apple juice (box)|1 box|0.25||drink
+Cordial|1 glass|0.1||drink
+Iced tea|1 bottle|0.3||drink
+Iced coffee (milk-based)|1 carton|1.0||drink
+Coffee, black|1 cup|0.15||drink,espresso
+Flat white or latte|1 cup|0.6||coffee,drink
+Latte with oat milk|1 cup|0.3||coffee,drink
+Cappuccino|1 cup|0.55||coffee,drink
+Tea, black|1 cup|0.05||drink
+Tea with milk|1 cup|0.15||drink
+Chai latte|1 cup|0.6||drink
+Hot chocolate|1 cup|0.7||drink,milo
+Chocolate milk or Milo|1 glass|0.6||drink
+Milkshake|1 regular|1.0||drink
+Bubble tea|1 cup|0.8||boba,drink
+Smoothie (fruit and yoghurt)|1 cup|0.6||drink
+Smoothie (fruit only)|1 cup|0.3||drink
+Protein shake|1 shake|0.9||drink
+Kombucha|1 bottle|0.2||drink
+Slushie|1 cup|0.3||slurpee,drink
+Frappe|1 cup|1.2||drink,coffee
+`;
+const words = s => s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim().split(' ').filter(Boolean);
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const FOODS = FOOD_RAW.trim().split('\n').filter(l => l.trim() && !l.startsWith('#')).map(l => {
+  const [name, serving, kg, flags='', alias=''] = l.split('|');
+  const r = flags.includes('r');
+  return {id:slug(name), name:name.trim(), serving:serving.trim(), kg:+kg, r, m:r || flags.includes('m'),
+          nameWords:words(name), hay:words(name + ' ' + alias)};
+});
+const FOOD_BY_ID = {}; FOODS.forEach(f => FOOD_BY_ID[f.id] = f);
+const byName = n => FOODS.find(f => f.name === n);
+const getFood = e => e.name ? e : FOOD_BY_ID[e.id];
+
+const MEALS = {
+  breakfast:{label:'Breakfast', icon:'🥣', ph:'Type a food, e.g. cereal, toast, banana…',
+    quick:['Cornflakes or puffed cereal','Milk, dairy','Toast, white','Butter','Vegemite','Banana','Egg, fried or scrambled','Bacon','Yoghurt']},
+  lunch:{label:'Lunch', icon:'🥪', ph:'Type a food, e.g. sandwich, pie, apple…',
+    quick:['Ham and cheese sandwich','Cheese and tomato sandwich','Chicken salad sandwich','Meat pie','Hot chips','Apple','Sushi roll (salmon, tuna or chicken)']},
+  dinner:{label:'Dinner', icon:'🍝', ph:'Type a food, e.g. chicken, rice, pasta…',
+    quick:['Spaghetti bolognese','Chicken breast','White rice','Mixed vegetables, steamed','Pizza slice (cheese)','Beef steak','Fried rice (vegetable)']},
+  snacks:{label:'Snacks and dessert', icon:'🍪', ph:'Type a snack, e.g. chips, chocolate, fruit…',
+    quick:['Potato chips (packet)','Chocolate bar','Muesli bar','Apple','Biscuits, plain','Ice cream']},
+  drinks:{label:'Drinks', icon:'🥤', ph:'Type a drink, e.g. water, juice, coffee…',
+    quick:['Water, tap','Soft drink (can)','Milk, dairy','Orange juice','Flat white or latte','Water, bottled']},
+};
+
+/* ============================================================
+   ANSWERS
+   ============================================================ */
+const DEFAULTS = {
+  mode:'bus', distance:5, car:'petrolM', occupants:2, dropback:'yes', schoolDays:5,
+  carKm:0, ptKm:0, travScale:2,
+  meals:{breakfast:[],lunch:[],dinner:[],snacks:[],drinks:[]}, foodScale:2,
+  people:4, solar:'no', hFan:2, hSplit:0, hDucted:0, hHeater:0, hGas:0, climScale:2,
+  showerMin:8, hotWater:'unsure', showerScale:2,
+  dPhone:1, dTablet:0, dLaptop:1, dConsole:0, dWear:0, hTV:2, hGame:1, hPhone:3, screenScale:2,
+  newClothes:2, usedClothes:0, parcels:3, fShort:0, fLong:0, fAsia:0, fFar:0,
+  shared:true
+};
+const clone = o => JSON.parse(JSON.stringify(o));
+let A = clone(DEFAULTS);
+try{ Object.assign(A, JSON.parse(localStorage.getItem('footprintCheckV2')||'{}')); }catch(e){}
+['breakfast','lunch','dinner','snacks','drinks'].forEach(k => { if(!Array.isArray(A.meals[k])) A.meals[k] = []; });
+const save = () => { try{ localStorage.setItem('footprintCheckV2', JSON.stringify(A)); }catch(e){} };
+
+/* approx. CO2 per person per year (tonnes), rounded, ~2022 */
+const COUNTRIES = [
+  ['Saudi Arabia',18],['Australia',15],['United States',15],['Canada',14],['South Korea',11.5],
+  ['Russia',11],['China',8],['Japan',8],['Germany',8],['United Kingdom',5],['France',4.5],
+  ['Vietnam',3.6],['Mexico',3],['Indonesia',2.8],['Brazil',2.3],['India',2],['Philippines',1.3],
+  ['Bangladesh',0.6],['Nigeria',0.6],['Kenya',0.4],['Ethiopia',0.2]
+];
+const WORLD_T = 4.7, AUS_T = 15;
+
+/* ============================================================
+   PAGES
+   ============================================================ */
+const scaleQ = (k, text) => ({k, type:'scale', label:text});
+const SECTIONS = [
+  {id:'travel',label:'Travel'},{id:'food',label:'Food'},{id:'home',label:'Home'},{id:'tech',label:'Tech'},{id:'stuff',label:'Stuff'}
+];
+const PAGES = [
+ {sec:'travel', icon:'🚌', title:'Getting to school', intro:'Think about how you travelled on your last school day.',
+  fact:'A car carrying four people produces about a quarter of the emissions per person of the same car carrying one. Walking and cycling cause none for the trip itself.',
+  qs:[
+  {k:'mode', type:'tiles', label:'How did you get to school?', opts:MODES},
+  {k:'distance', type:'num', label:'How far is school from home (one way)?', help:'A maps app can measure it for you.', min:0.2, max:60, step:0.2, unit:'km'},
+  {k:'schoolDays', type:'num', label:'On how many days a week do you travel this way?', min:0, max:5, step:1, unit:'days a week'},
+  {k:'dropback', type:'choice', label:'After dropping you off, does the driver go straight back home?', help:'That empty trip home adds emissions too.', show:a=>a.mode==='car',
+    opts:[{id:'yes',label:'Yes, back home'},{id:'no',label:'No, on to work or elsewhere'}]},
+  {k:'car', type:'choice', label:'What type of car does your family use most?', help:'We use this for any car trips in the survey.', opts:CARS},
+  {k:'occupants', type:'num', label:'How many people are usually in the car, including you?', help:'Emissions are shared between everyone in the car.', min:1, max:6, step:1, unit:'people'},
+ ]},
+ {sec:'travel', icon:'🗺️', title:'Other trips yesterday', intro:'Sport, shopping, friends, family outings. Not the trip to school.',
+  fact:'Per person and per kilometre, a bus produces roughly half the emissions of a car with one person in it, and a train often much less.',
+  qs:[
+  {k:'carKm', type:'num', label:'How many kilometres did you travel in a car?', help:'Zero if you stayed home or only went to school.', min:0, max:300, step:1, unit:'km'},
+  {k:'ptKm', type:'num', label:'How many kilometres on a bus, train or ferry?', min:0, max:200, step:1, unit:'km'},
+  scaleQ('travScale','Compared with yesterday, on an average day across the year I travel by car:'),
+ ]},
+ {sec:'food', icon:'🥣', title:'Breakfast and lunch', intro:'Search for each food you ate yesterday and tap it to add it. Add as many as you like.', food:['breakfast','lunch'],
+  fact:'Producing food causes roughly a quarter of the world\'s greenhouse gas emissions.', qs:[]},
+ {sec:'food', icon:'🍝', title:'Dinner, snacks and drinks', intro:'Keep going. Include everything, even the small stuff.', food:['dinner','snacks','drinks'], foodEnd:true,
+  fact:'Per serving, beef and lamb typically cause several times the emissions of chicken, and many times those of plant foods like lentils or vegetables.',
+  qs:[scaleQ('foodScale','Compared with yesterday, on an average day across the year the food I eat has:')]},
+ {sec:'home', icon:'❄️', title:'Heating and cooling', intro:'Estimate how many hours each of these was running yesterday.',
+  fact:'Heating and cooling can be one of the biggest uses of electricity in an Australian home.',
+  qs:[
+  {k:'people', type:'num', label:'How many people live in your home?', help:'Shared appliances are split between everyone.', min:1, max:10, step:1, unit:'people'},
+  {k:'solar', type:'choice', label:'Does your home have solar panels?', opts:[{id:'yes',label:'Yes'},{id:'no',label:'No'},{id:'unsure',label:'Not sure'}]},
+  {k:'hFan', type:'num', label:'Hours a fan was running near you', min:0, max:24, step:1, unit:'hours'},
+  {k:'hSplit', type:'num', label:'Hours your bedroom air-con (wall unit) ran', min:0, max:24, step:1, unit:'hours'},
+  {k:'hDucted', type:'num', label:'Hours whole-house (ducted) air-con ran', min:0, max:24, step:1, unit:'hours'},
+  {k:'hHeater', type:'num', label:'Hours an electric heater ran near you', min:0, max:24, step:1, unit:'hours'},
+  {k:'hGas', type:'num', label:'Hours a gas heater ran in your home', min:0, max:24, step:1, unit:'hours'},
+  scaleQ('climScale','Compared with yesterday, on an average day across the year we use air-con and heaters:'),
+ ]},
+ {sec:'home', icon:'🚿', title:'Hot water', intro:'Showers use a lot of energy because the water has to be heated.',
+  fact:'Heating water is typically one of the largest energy uses in a home.',
+  qs:[
+  {k:'showerMin', type:'num', label:'Total minutes in the shower yesterday', min:0, max:40, step:1, unit:'minutes'},
+  {k:'hotWater', type:'choice', label:'How is your hot water heated?', opts:HOT_WATER},
+  scaleQ('showerScale','Compared with yesterday, on an average day across the year I shower for:'),
+ ]},
+ {sec:'tech', icon:'📱', title:'Your devices', intro:'How many of each do you own and keep charged?',
+  fact:'Most of a smartphone\'s lifetime emissions come from making it, not from charging it. Keeping devices longer is a big win.',
+  qs:[
+  {k:'dPhone', type:'num', label:'Phones', min:0, max:5, step:1, unit:'phones'},
+  {k:'dTablet', type:'num', label:'Tablets', min:0, max:5, step:1, unit:'tablets'},
+  {k:'dLaptop', type:'num', label:'Laptops or school computers', min:0, max:5, step:1, unit:'laptops'},
+  {k:'dConsole', type:'num', label:'Game consoles or gaming PCs', min:0, max:5, step:1, unit:'consoles'},
+  {k:'dWear', type:'num', label:'Smart watches, earbuds and other gadgets', min:0, max:8, step:1, unit:'gadgets'},
+ ]},
+ {sec:'tech', icon:'📺', title:'Screen time yesterday', intro:'Your phone\'s screen-time report makes this easy.',
+  fact:'Streaming video uses less energy than many people assume. The device you watch on, and how long it runs, matter most.',
+  qs:[
+  {k:'hTV', type:'num', label:'TV and video streaming (any screen)', min:0, max:16, step:0.5, unit:'hours'},
+  {k:'hGame', type:'num', label:'Gaming on a console or PC', min:0, max:16, step:0.5, unit:'hours'},
+  {k:'hPhone', type:'num', label:'On your phone (social media, scrolling)', min:0, max:16, step:0.5, unit:'hours'},
+  scaleQ('screenScale','Compared with yesterday, on an average day across the year my screen time is:'),
+ ]},
+ {sec:'stuff', icon:'📦', title:'Clothes and parcels', intro:'Think about the last month.',
+  fact:'Making a single new pair of jeans can release tens of kilograms of CO₂e, comparable to driving well over 100 km.',
+  qs:[
+  {k:'newClothes', type:'num', label:'New clothes and shoes you got', help:'Include gifts. A pair of shoes counts as 1.', min:0, max:20, step:1, unit:'items'},
+  {k:'usedClothes', type:'num', label:'Second-hand clothes you got', min:0, max:20, step:1, unit:'items'},
+  {k:'parcels', type:'num', label:'Parcels delivered to your home for you', help:'Online orders, gifts, anything posted to you.', min:0, max:30, step:1, unit:'parcels'},
+ ]},
+ {sec:'stuff', icon:'✈️', title:'Flights', intro:'Return flights you took in the last 12 months.',
+  fact:'A single return flight from Australia to Europe can cause more than 3 tonnes of CO₂e per passenger.',
+  qs:[
+  {k:'fShort', type:'num', label:'Short returns, e.g. Sydney to Melbourne', min:0, max:8, step:1, unit:'returns'},
+  {k:'fLong', type:'num', label:'Long domestic returns, e.g. Sydney to Perth or Cairns', min:0, max:8, step:1, unit:'returns'},
+  {k:'fAsia', type:'num', label:'To New Zealand, the Pacific or Asia', min:0, max:8, step:1, unit:'returns'},
+  {k:'fFar', type:'num', label:'To Europe, Africa or the Americas', min:0, max:8, step:1, unit:'returns'},
+ ]},
+];
+
+const CATS = [
+  {id:'transport', label:'Transport', icon:'🚌', color:'#3b6fd4', tip:'Cars are the big lever. Walking, cycling, public transport and sharing rides cut this quickly.'},
+  {id:'food', label:'Food and drink', icon:'🍽️', color:'#e58a2b', tip:'Beef and lamb are the heavy hitters. Swapping some for chicken, fish, eggs or plant proteins helps a lot.'},
+  {id:'home', label:'Home energy and water', icon:'🏠', color:'#d9503f', tip:'Air-con, heaters and hot showers burn electricity or gas. Fans, shorter showers and solar help.'},
+  {id:'devices', label:'Devices and screens', icon:'📱', color:'#7d5bc2', tip:'Most of a device\'s footprint is in making it, so keeping it longer beats saving charge.'},
+  {id:'shopping', label:'Clothes and parcels', icon:'📦', color:'#1d9a8a', tip:'New clothes are energy-heavy to make. Second-hand, swaps and buying less all help.'},
+  {id:'flights', label:'Flights', icon:'✈️', color:'#c4417f', tip:'One long-haul return trip can outweigh everything else in the year.'},
+];
+const SHARED_COLOR = '#a9b0b7';
+
+/* ============================================================
+   CALCULATION. kg CO2e per year by category. m = what-if switches.
+   ============================================================ */
+const sc = k => SCALE[A[k]].v;
+const entryKg = (e, key, m) => {
+  const f = getFood(e); if(!f) return 0;
+  let kg = f.kg;
+  if(m.noRed && f.r) kg *= 0.3;
+  if(m.vegDinner && key === 'dinner' && f.m) kg = Math.min(kg, f.kg * 0.25);
+  return kg * e.q;
+};
+const mealKg = (key, m = {}) => (A.meals[key] || []).reduce((s,e) => s + entryKg(e, key, m), 0);
+
+function calc(m = {}){
+  const car = CARS.find(c => c.id === A.car) || CARS[1];
+  const occ = Math.max(1, A.occupants);
+
+  let mode = A.mode;
+  if(m.swapSchool && (mode === 'car' || mode === 'moto')) mode = A.distance <= 3 ? 'walk' : 'train';
+  const perKm = mode === 'car' ? car.kg / occ * (A.dropback === 'yes' ? 2 : 1) : MODES.find(x => x.id === mode).kg;
+  const school = perKm * A.distance * 2 * A.schoolDays * SCHOOL_WEEKS;
+  const other = (A.carKm * car.kg / occ + A.ptKm * PT) * sc('travScale') * 365;
+  const transport = school + other;
+
+  const dayFood = Object.keys(MEALS).reduce((s,k) => s + mealKg(k, m), 0);
+  const food = dayFood * sc('foodScale') * 365;
+
+  const e = GRID * (A.solar === 'yes' ? 0.5 : 1);
+  const ppl = Math.max(1, A.people);
+  const climateDay = A.hFan*0.05*e + A.hSplit*0.8*e + A.hDucted*3*e/ppl + A.hHeater*1.8*e + A.hGas*1.5/ppl;
+  const hw = (HOT_WATER.find(x => x.id === A.hotWater) || HOT_WATER[3]).kg;
+  const showerMin = m.shortShower ? Math.min(A.showerMin, 4) : A.showerMin;
+  const home = climateDay * sc('climScale') * 365 * (m.halfClimate ? 0.5 : 1) + showerMin * 9 * hw * sc('showerScale') * 365;
+
+  let own = 0;
+  for(const k in DEVICES) own += A[k] * (DEVICES[k].kwh * e + DEVICES[k].made * (m.keepDevices ? 0.5 : 1));
+  const screens = (A.hTV*0.10 + A.hGame*0.12 + A.hPhone*0.03) * sc('screenScale') * 365;
+  const devices = own + screens;
+
+  const sm = m.halveShop ? 0.5 : 1;
+  const shopping = ((A.newClothes*10 + A.parcels*4) * sm + A.usedClothes) * 12;
+
+  const fl = {fShort:A.fShort, fLong:A.fLong, fAsia:A.fAsia, fFar:A.fFar};
+  if(m.noFlight){ const b = ['fFar','fAsia','fLong','fShort'].find(k => fl[k] > 0); if(b) fl[b]--; }
+  const flights = Object.keys(fl).reduce((s,k) => s + fl[k] * FLIGHT_KG[k], 0);
+
+  return {transport, food, home, devices, shopping, flights};
+}
+const personal = c => Object.values(c).reduce((s,v) => s + v, 0);
+const totalKg = c => personal(c) + (A.shared ? SHARED_KG : 0);
+
+const WHATIFS = [
+  {id:'swapSchool', icon:'🚆', label:'Go to school by train or bus (or walk if under 3 km) instead of a car or motorbike'},
+  {id:'noRed', icon:'🍗', label:'Swap beef and lamb for chicken or plant-based versions'},
+  {id:'vegDinner', icon:'🥦', label:'Eat a vegetarian dinner every day'},
+  {id:'halveShop', icon:'♻️', label:'Halve new clothes and parcels (second-hand is great)'},
+  {id:'noFlight', icon:'✈️', label:'Take one fewer return flight a year'},
+  {id:'halfClimate', icon:'🌀', label:'Halve air-con and heater time (fans, blankets, curtains)'},
+  {id:'shortShower', icon:'🚿', label:'Keep showers to 4 minutes'},
+  {id:'keepDevices', icon:'📱', label:'Keep your devices twice as long before upgrading'},
+];
+let mods = {}, resTab = 'overview', view = 'intro';
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const stage = document.getElementById('stage');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const T = kg => { const t = kg/1000; return t >= 1 ? t.toFixed(1) : t.toFixed(2); };
+const n0 = x => Math.round(x).toLocaleString('en-AU');
+const lvl = kg => kg < 0.5 ? 'l' : kg < 1.5 ? 'm' : 'h';
+const pct = (v,min,max) => ((v-min)/(max-min)*100).toFixed(1) + '%';
+
+const LOGO = `<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#0f5c4a"/><path d="M8 13c3-4 8-4 10-1s-1 5-4 5-3 4-6 3-2-4 0-7zM19 20c3-2 6 0 7 2s-2 5-5 4-4-4-2-6z" fill="#7ee0b3"/></svg>`;
+
+/* ============================================================
+   HEADER AND NAV
+   ============================================================ */
+function drawTop(){
+  const cur = typeof view === 'number' ? PAGES[view].sec : null;
+  const curIdx = cur ? SECTIONS.findIndex(s => s.id === cur) : -1;
+  const secs = (view === 'intro') ? '' : '<div class="secs" aria-label="Progress">' + SECTIONS.map((s,i) => {
+    const pages = PAGES.map((p,j) => [p,j]).filter(x => x[0].sec === s.id);
+    let frac = 0;
+    if(view === 'results') frac = 1;
+    else { const done = pages.filter(x => x[1] < view).length; frac = done / pages.length; if(i < curIdx) frac = 1; if(i > curIdx) frac = 0; }
+    return `<div class="sec ${i===curIdx?'on':''} ${frac===1?'done':''}"><div class="bar"><i style="width:${frac*100}%"></i></div><span>${s.label}</span></div>`;
+  }).join('') + '</div>';
+  document.getElementById('top').innerHTML = `<div class="topin"><div class="brand">${LOGO}Footprint Check</div>${secs}</div>`;
+}
+function drawNav(){
+  const h = document.getElementById('navhost');
+  if(typeof view !== 'number'){ h.innerHTML = ''; return; }
+  const last = view === PAGES.length - 1;
+  h.innerHTML = `<div class="navbar"><div class="navin">
+    <button class="btn ghost" id="back">← Back</button>
+    <span class="pg">Page ${view+1} of ${PAGES.length}</span>
+    <button class="btn" id="next">${last ? 'See my results →' : 'Next →'}</button></div></div>`;
+}
+
+/* ============================================================
+   QUESTIONS
+   ============================================================ */
+function renderQ(q){
+  let body = '';
+  if(q.type === 'choice'){
+    body = '<div class="chips" role="radiogroup">' + q.opts.map(o =>
+      `<button type="button" class="chip" role="radio" aria-checked="${A[q.k]===o.id}" data-k="${q.k}" data-v="${o.id}">${esc(o.label)}</button>`).join('') + '</div>';
+  } else if(q.type === 'tiles'){
+    body = '<div class="tiles" role="radiogroup">' + q.opts.map(o =>
+      `<button type="button" class="tile" role="radio" aria-checked="${A[q.k]===o.id}" data-k="${q.k}" data-v="${o.id}"><span class="ti">${o.icon}</span>${esc(o.label)}</button>`).join('') + '</div>';
+  } else if(q.type === 'scale'){
+    body = '<div class="scalebox"><div class="scale" role="radiogroup">' + SCALE.map((o,i) =>
+      `<button type="button" class="chip" role="radio" aria-checked="${A[q.k]===i}" data-k="${q.k}" data-v="${i}"><span class="g">${o.g}</span>${o.l}</button>`).join('') + '</div></div>';
+  } else {
+    const v = A[q.k];
+    body = `<div class="num"><input type="range" min="${q.min}" max="${q.max}" step="${q.step}" value="${v}" data-n="${q.k}" style="--p:${pct(v,q.min,q.max)}" aria-label="${esc(q.label)}">
+      <div class="numbox"><input type="number" min="${q.min}" max="${q.max}" step="${q.step}" value="${v}" data-n="${q.k}" aria-label="${esc(q.label)} (number)"><span class="unit">${q.unit}</span></div></div>`;
+  }
+  return `<section class="qcard"><div class="qt">${esc(q.label)}</div>${q.help?`<div class="help">${esc(q.help)}</div>`:''}${body}</section>`;
+}
+
+function mealCard(key){
+  const M = MEALS[key];
+  const quick = M.quick.map(n => byName(n)).filter(Boolean)
+    .map(f => `<button type="button" class="qk" data-add="${key}" data-id="${f.id}">+ ${esc(f.name)}</button>`).join('');
+  return `<section class="meal" data-meal="${key}">
+    <div class="mealhead"><span class="mi">${M.icon}</span><h3>${M.label}</h3><span class="sub" id="sub-${key}"></span></div>
+    <div class="search"><input type="text" data-search="${key}" placeholder="${esc(M.ph)}" autocomplete="off" role="combobox" aria-expanded="false" aria-label="Search foods for ${M.label.toLowerCase()}">
+      <div class="dd" id="dd-${key}" role="listbox"></div></div>
+    <div class="quick"><span class="ql">Quick add:</span>${quick}</div>
+    <div class="items" id="items-${key}"></div></section>`;
+}
+function itemRows(key){
+  const list = A.meals[key];
+  if(!list.length) return '<div class="empty">Nothing added yet. If you skipped this one, that\'s fine.</div>';
+  return list.map((e,i) => {
+    const f = getFood(e); if(!f) return '';
+    return `<div class="item"><div class="nm">${esc(f.name)}<span class="sv">${esc(f.serving)}</span></div>
+      <div class="stepper"><button type="button" data-qty="${key}|${i}|-1" aria-label="Less">−</button><span>${e.q}</span><button type="button" data-qty="${key}|${i}|1" aria-label="More">+</button></div>
+      <div class="kg"><i class="dot ${lvl(f.kg)}" style="display:inline-block;margin-right:6px"></i>${(f.kg*e.q).toFixed(2)} kg</div>
+      <button type="button" class="rm" data-rm="${key}|${i}" aria-label="Remove ${esc(f.name)}">×</button></div>`;
+  }).join('');
+}
+function refreshMeal(key){
+  const el = document.getElementById('items-' + key);
+  if(el) el.innerHTML = itemRows(key);
+  const sub = document.getElementById('sub-' + key);
+  if(sub){ const kg = mealKg(key); sub.textContent = kg ? kg.toFixed(1) + ' kg CO₂e' : 'empty'; }
+  const tot = document.getElementById('foodtotal');
+  if(tot){
+    const day = Object.keys(MEALS).reduce((s,k) => s + mealKg(k), 0);
+    tot.innerHTML = `<b>${day.toFixed(1)} kg</b><span>CO₂e for everything you ate and drank yesterday. That is about <b style="font-size:1rem">${n0(day/CAR_AVG)} km</b> of driving an average petrol car.</span>`;
+  }
+  save();
+}
+
+/* ----- search / dropdown ----- */
+let actIdx = {};
+function searchFoods(q){
+  const w = words(q);
+  if(!w.length) return [];
+  const out = [];
+  for(const f of FOODS){
+    if(w.every(t => f.hay.some(h => h.startsWith(t)))){
+      const s = f.name.toLowerCase().startsWith(w[0]) ? 0 : f.nameWords.some(h => h.startsWith(w[0])) ? 1 : 2;
+      out.push([s, f]);
+    }
+  }
+  out.sort((a,b) => a[0]-b[0] || a[1].name.length-b[1].name.length);
+  return out.slice(0,8).map(x => x[1]);
+}
+function showDD(key){
+  const input = document.querySelector(`[data-search="${key}"]`);
+  const dd = document.getElementById('dd-' + key);
+  const q = input.value.trim();
+  actIdx[key] = 0;
+  if(q.length < 1){ closeDD(key); return; }
+  const res = searchFoods(q);
+  if(res.length){
+    dd.innerHTML = res.map((f,i) => `<button type="button" class="opt ${i===0?'act':''}" role="option" data-add="${key}" data-id="${f.id}">
+      <i class="dot ${lvl(f.kg)}"></i><span class="nm">${esc(f.name)}</span><span class="sv">${esc(f.serving)}</span></button>`).join('');
+  } else {
+    dd.innerHTML = `<div class="ddcust"><p>No match for <b>${esc(q)}</b>. Add it anyway and choose what it's mostly made of:</p>
+      <div class="chips">
+        <button type="button" class="chip" data-cust="${key}|plant">Mostly plants</button>
+        <button type="button" class="chip" data-cust="${key}|animal">Chicken, fish, eggs or dairy</button>
+        <button type="button" class="chip" data-cust="${key}|red">Beef or lamb</button></div></div>`;
+  }
+  dd.classList.add('open'); input.setAttribute('aria-expanded','true');
+}
+function closeDD(key){
+  const dd = document.getElementById('dd-' + key); if(!dd) return;
+  dd.classList.remove('open'); dd.innerHTML = '';
+  const i = document.querySelector(`[data-search="${key}"]`); if(i) i.setAttribute('aria-expanded','false');
+}
+function closeAllDD(){ Object.keys(MEALS).forEach(closeDD); }
+function addFood(key, id){
+  const list = A.meals[key];
+  const ex = list.find(e => e.id === id && !e.name);
+  if(ex) ex.q = Math.min(10, ex.q + 1); else list.push({id, q:1});
+  const input = document.querySelector(`[data-search="${key}"]`);
+  if(input){ input.value = ''; }
+  closeDD(key); refreshMeal(key);
+}
+function addCustom(key, kind){
+  const input = document.querySelector(`[data-search="${key}"]`);
+  const name = (input.value.trim() || 'Custom item').slice(0,40);
+  const t = {plant:{kg:0.6,r:false,m:false}, animal:{kg:1.5,r:false,m:true}, red:{kg:4.5,r:true,m:true}}[kind];
+  A.meals[key].push({id:'custom-'+Date.now(), name, serving:'1 serving (estimate)', q:1, ...t});
+  input.value = ''; closeDD(key); refreshMeal(key);
+}
+
+/* ============================================================
+   PAGES RENDER
+   ============================================================ */
+function renderPage(i, keepScroll){
+  const p = PAGES[i];
+  const sec = SECTIONS.find(s => s.id === p.sec);
+  const inSec = PAGES.filter(x => x.sec === p.sec);
+  const n = inSec.indexOf(p) + 1;
+  let body = '';
+  if(p.food){
+    body += p.food.map(mealCard).join('');
+    if(p.foodEnd) body += '<div class="foodtotal" id="foodtotal"></div>';
+    body += '<div class="legendmini"><span><i class="dot l"></i>low carbon</span><span><i class="dot m"></i>medium</span><span><i class="dot h"></i>high</span></div>';
+  }
+  body += p.qs.filter(q => !q.show || q.show(A)).map(renderQ).join('');
+  stage.innerHTML = `<div class="wrap">
+    <div class="pagehead"><div class="pageic">${p.icon}</div><div><div class="kicker">${sec.label} · ${n} of ${inSec.length}</div><h1>${p.title}</h1><p>${p.intro}</p></div></div>
+    ${body}
+    <div class="fact"><span class="fi">💡</span><div><b>Did you know?</b> ${p.fact}</div></div></div>`;
+  if(p.food) p.food.forEach(refreshMeal);
+  if(p.foodEnd && p.food.every(k => true)){ /* totals cover all meals */ }
+  if(!keepScroll) window.scrollTo(0,0);
+}
+
+function renderIntro(){
+  stage.innerHTML = `<div class="hero-intro">
+      <div class="eyebrow">Carbon calculator for teenagers</div>
+      <h1>How big is your carbon footprint?</h1>
+      <p>Answer a few questions about your last 24 hours. We'll estimate the greenhouse gases your lifestyle causes in a year, and show how that compares with people around the world.</p>
+      <button class="btn sun lg" id="start">Start the check →</button>
+    </div>
+    <div class="points">
+      <div class="point"><span class="ic">⏱️</span><b>About 10 minutes</b><span>No bills or shopping lists. Just things you know about yourself.</span></div>
+      <div class="point"><span class="ic">🔒</span><b>Private</b><span>Your answers stay in this browser. Nothing is sent anywhere.</span></div>
+      <div class="point"><span class="ic">📊</span><b>A clear picture</b><span>See where your footprint comes from and which changes matter most.</span></div>
+    </div>
+    <p class="small muted" style="margin-top:22px;max-width:46em">This is an <b>estimate</b> with a margin of error, built to compare choices rather than to judge you. The unit is <b>CO₂e</b> (carbon dioxide equivalent): all greenhouse gases converted into the amount of CO₂ that would warm the planet the same amount. 1 tonne = 1000 kg.</p>`;
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+function earthSVG(land, sea){
+  return `<svg viewBox="0 0 40 40" width="54" height="54"><circle cx="20" cy="20" r="18" fill="${sea}"/><path d="M9 14c4-6 10-5 12-2s-2 6-5 6-4 4-7 3-2-5 0-7zM24 23c3-2 7 0 8 3s-3 7-6 6-4-7-2-9z" fill="${land}"/></svg>`;
+}
+function earthRow(count){
+  const full = Math.min(12, Math.ceil(count)); let h = '';
+  for(let i = 0; i < full; i++){
+    const f = Math.max(0, Math.min(1, count - i));
+    h += `<span class="earthicon" title="${f<1?Math.round(f*100)+'% of an Earth':'1 Earth'}"><span class="base">${earthSVG('#c4ccd4','#e3e8ec')}</span><span class="col" style="width:${54*f}px">${earthSVG('#4caf6a','#2b7bd6')}</span></span>`;
+  }
+  return `<div class="earths">${h}</div>` + (count > 12 ? '<div class="small muted">Showing the first 12 Earths.</div>' : '');
+}
+function donut(rows, total){
+  const R = 68, C = 2*Math.PI*R; let off = 0;
+  const segs = rows.map(r => { const len = r.kg/total*C;
+    const s = `<circle cx="90" cy="90" r="${R}" fill="none" style="stroke:${r.color}" stroke-width="26" stroke-dasharray="${Math.max(0,len-1.5)} ${C-Math.max(0,len-1.5)}" stroke-dashoffset="${-off}" transform="rotate(-90 90 90)"><title>${esc(r.label)}: ${T(r.kg)} t</title></circle>`;
+    off += len; return s; }).join('');
+  return `<svg viewBox="0 0 180 180" class="donut" role="img" aria-label="Footprint by category"><circle cx="90" cy="90" r="${R}" fill="none" stroke="#efede4" stroke-width="26"/>${segs}
+    <text x="90" y="92" text-anchor="middle" class="dn">${T(total)}</text><text x="90" y="110" text-anchor="middle" class="dl">tonnes a year</text></svg>`;
+}
+function compareBars(rows){
+  const max = Math.max(...rows.map(r => r.t)) * 1.04;
+  return '<div class="cmp">' + rows.map(r => `<div class="row ${r.you?'you':''}"><div class="nm">${r.n}</div>
+    <div class="tr"><div class="fl" style="width:${r.t/max*100}%;background:${r.c}"></div></div><div class="v">${r.t.toFixed(1)} t</div></div>`).join('') + '</div>';
+}
+function countryChart(youKg, newKg){
+  const rows = COUNTRIES.map(([n,t]) => ({n, t}));
+  rows.push({n:'You', t:youKg/1000, you:true});
+  if(newKg != null) rows.push({n:'You, with changes', t:newKg/1000, you:true, alt:true});
+  rows.sort((a,b) => b.t - a.t);
+  const max = Math.max(...rows.map(r => r.t)) * 1.05;
+  return `<div class="refkey"><span><b style="border-color:#3b6fd4"></b>World average (${WORLD_T} t)</span><span><b style="border-color:#d9503f"></b>Fair share for a safe climate (${BUDGET_T} t)</span></div>
+  <div class="country">${rows.map(r => `<div class="row${r.you?' you':''}${r.alt?' alt':''}"><div class="nm">${r.n}</div>
+    <div class="tr"><div class="fl" style="width:${r.t/max*100}%"></div><div class="ref w" style="left:${WORLD_T/max*100}%"></div><div class="ref s" style="left:${BUDGET_T/max*100}%"></div></div>
+    <div class="v">${r.t >= 10 ? r.t.toFixed(0) : r.t.toFixed(1)}</div></div>`).join('')}</div>`;
+}
+
+function topFoods(){
+  const tally = {}; let animalKg = 0, redKg = 0, all = 0;
+  for(const key in MEALS) for(const e of A.meals[key]){
+    const f = getFood(e); if(!f) continue;
+    const kg = f.kg * e.q; all += kg;
+    if(f.m) animalKg += kg; if(f.r) redKg += kg;
+    const t = tally[f.name] || (tally[f.name] = {name:f.name, kg:0}); t.kg += kg;
+  }
+  return {list:Object.values(tally).sort((a,b) => b.kg - a.kg).slice(0,6), all, animalKg, redKg};
+}
+
+function renderResults(){
+  const c = calc();
+  const pKg = personal(c), tKg = totalKg(c), tT = tKg/1000;
+  const earths = tT / BUDGET_T;
+  const sh = A.shared ? SHARED_KG : 0;
+  const lo = pKg*(1-RANGE) + sh, hi = pKg*(1+RANGE) + sh;
+  const cats = CATS.map(k => ({...k, kg:c[k.id]})).sort((a,b) => b.kg - a.kg);
+  const top = cats[0];
+  const rowsAll = A.shared ? [...cats, {id:'shared', label:'Shared services', icon:'🏫', color:SHARED_COLOR, kg:SHARED_KG, tip:'Roads, hospitals, schools, shops and government that everyone relies on.'}] : cats;
+  const tot = rowsAll.reduce((s,r) => s + r.kg, 0) || 1;
+  const maxCat = Math.max(...rowsAll.map(r => r.kg)) || 1;
+  const food = topFoods();
+  const vsFair = tT / BUDGET_T, vsWorld = tT / WORLD_T;
+
+  const tabs = [['overview','Overview'],['breakdown','Breakdown'],['world','You vs the world'],['act','What could change'],['method','How it works']];
+
+  stage.innerHTML = `
+  <section class="rhero">
+    <div class="rtitle"><div><div class="eyebrow">Your estimated carbon footprint</div>
+      <div class="rbig"><span class="n" id="bigNum">${T(tKg)}</span><span class="u">tonnes of CO₂e per year</span></div>
+      <div class="rrange">Most likely between ${T(lo)} and ${T(hi)} tonnes. ${A.shared?'Includes':'Excludes'} your share of shared services.</div></div>
+      <label class="switch noprint"><input type="checkbox" id="sharedToggle" ${A.shared?'checked':''}><i></i>Include shared services</label></div>
+    <div class="rstats">
+      <div class="rstat"><b>${(tKg/365).toFixed(1)} kg</b><span>on an average day</span></div>
+      <div class="rstat"><b>${earths.toFixed(1)} Earths</b><span>if everyone lived like you</span></div>
+      <div class="rstat"><b>${vsFair.toFixed(1)}×</b><span>a fair share (${BUDGET_T} t)</span></div>
+      <div class="rstat"><b>${vsWorld.toFixed(1)}×</b><span>the world average</span></div>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist">${tabs.map(([id,l]) => `<button class="tab" role="tab" data-tab="${id}" aria-selected="${id===resTab}">${l}</button>`).join('')}</nav>
+
+  <div class="panel ${resTab==='overview'?'on':''}" id="p-overview">
+    <div class="card"><h2>How you compare</h2><p class="cl">Tonnes of CO₂e per person per year.</p>
+      ${compareBars([
+        {n:'Fair share', t:BUDGET_T, c:'#d9503f'},
+        {n:'World average', t:WORLD_T, c:'#3b6fd4'},
+        {n:'You', t:tT, c:'#14806a', you:true},
+        {n:'Average Australian', t:AUS_T, c:'#a9b0b7'}].sort((a,b)=>a.t-b.t))}
+    </div>
+    <div class="grid2">
+      <div class="card"><div class="insight"><div class="ib" style="background:${top.color}22">${top.icon}</div><div>
+        <h3>Your biggest source: ${top.label.toLowerCase()}</h3>
+        <p class="muted small" style="margin:0 0 6px"><b>${T(top.kg)} t</b> a year, ${Math.round(top.kg/tot*100)}% of your total.</p>
+        <p class="small" style="margin:0">${top.tip}</p></div></div></div>
+      <div class="card"><h2>How many Earths?</h2>
+        <p class="cl" style="margin-bottom:4px">If every person emitted what you do.</p>
+        ${earthRow(earths)}
+        <p class="small" style="margin:0"><b>${earths.toFixed(1)} Earths.</b> ${earths <= 1 ? 'You are within a fair share. Well done.' : earths < 3 ? 'Above a fair share, but closer than most people in wealthy countries.' : 'Well above a fair share, which is typical in a wealthy country like Australia.'}</p></div>
+    </div>
+    <div class="card"><h2>What does that look like?</h2><p class="cl">Your yearly footprint is about the same as...</p>
+      <div class="equiv">
+        <div class="eq"><span class="e">🚗</span><b>${n0(tKg/CAR_AVG)} km</b><span>driving an average petrol car</span></div>
+        <div class="eq"><span class="e">🌳</span><b>${n0(tKg/TREE_KG)} trees</b><span>absorbing CO₂ for a whole year</span></div>
+        <div class="eq"><span class="e">✈️</span><b>${(tKg/FLIGHT_KG.fShort).toFixed(1)}</b><span>return flights Sydney to Melbourne</span></div>
+        <div class="eq"><span class="e">🇦🇺</span><b>${Math.round(tT/AUS_T*100)}%</b><span>of the average Australian's CO₂</span></div>
+      </div></div>
+  </div>
+
+  <div class="panel ${resTab==='breakdown'?'on':''}" id="p-breakdown">
+    <div class="card"><h2>Where your footprint comes from</h2><p class="cl">Share of your yearly total by category.</p>
+      <div class="donutwrap">${donut(rowsAll, tot)}
+        <div class="lg">${rowsAll.map(r => `<div class="lrow"><i style="background:${r.color}"></i><span>${r.label}</span><span class="t">${T(r.kg)} t</span><span class="p">${Math.round(r.kg/tot*100)}%</span></div>`).join('')}</div></div></div>
+    <div class="card"><h2>Category by category</h2><p class="cl">Largest first, with ideas for each.</p>
+      <div class="catbars">${rowsAll.map(r => `<div class="cb"><div class="top"><span>${r.icon} ${r.label}</span><span>${T(r.kg)} t</span></div>
+        <div class="tr"><div class="fl" style="width:${r.kg/maxCat*100}%;background:${r.color}"></div></div><div class="tip">${r.tip}</div></div>`).join('')}</div></div>
+    <div class="card"><h2>🍽️ Your food, in detail</h2>
+      ${food.list.length ? `<p class="cl">The highest-carbon things you ate and drank yesterday (kg CO₂e).</p>
+        ${food.list.map(f => `<div class="foodrow"><span>${esc(f.name)}</span><div class="tr"><div class="fl" style="width:${f.kg/food.list[0].kg*100}%"></div></div><span class="v">${f.kg.toFixed(2)}</span></div>`).join('')}
+        <p class="small muted" style="margin:12px 0 0">Meat and fish made up <b>${food.all ? Math.round(food.animalKg/food.all*100) : 0}%</b> of yesterday's food footprint${food.redKg ? `, and beef and lamb alone <b>${Math.round(food.redKg/food.all*100)}%</b>` : ''}.</p>`
+      : '<p class="cl" style="margin:0">You didn\'t add any foods. Go back to the food pages to see a detailed breakdown here.</p>'}</div>
+  </div>
+
+  <div class="panel ${resTab==='world'?'on':''}" id="p-world">
+    <div class="card"><h2>You vs. the world</h2>
+      <p class="cl">Tonnes of CO₂ per person per year. Country figures are rounded estimates from around 2022 and count only CO₂ produced inside each country, so this is a rough comparison.</p>
+      <div id="countryBox"></div></div>
+    <div class="card"><h2>Earths needed at each lifestyle</h2>
+      <p class="cl">If everyone on the planet emitted as much as...</p>
+      <div class="earthchips">
+        ${[['You',tT],['World average',WORLD_T],['Australia',AUS_T],['United States',15],['China',8],['India',2]].map(([n,t]) => `<div class="ec"><b>${(t/BUDGET_T).toFixed(1)}</b>${n}</div>`).join('')}
+      </div></div>
+  </div>
+
+  <div class="panel ${resTab==='act'?'on':''}" id="p-act">
+    <div class="wisum" id="wiSum"></div>
+    <div id="wiList"></div>
+  </div>
+
+  <div class="panel ${resTab==='method'?'on':''}" id="p-method">
+    <div class="card"><h2>How reliable is this?</h2>
+      <div class="note">This is a deliberately simple estimate with a margin of error of roughly ±30%. Yesterday might not be typical, we use rounded averages, and plenty of things (pets, appliances, school buildings) aren't counted. Use it to compare <b>choices</b>, not to judge one number.</div></div>
+    <div class="card"><h2>How we worked it out</h2><p class="cl">Everything is converted to kg of CO₂e. Daily answers are scaled to an average day using your "much less … much more" answers (×0.4, ×0.7, ×1, ×1.3, ×1.7), then multiplied up to a year. Values are rounded averages based on published sources such as Australian national greenhouse accounting factors and published food life-cycle studies.</p>
+      <table class="f"><tr><th>Item</th><th>Factor used</th></tr>
+        <tr><td>Electricity (NSW grid)</td><td>${GRID} kg per kWh (halved if you have solar panels)</td></tr>
+        <tr><td>Petrol car</td><td>0.15 to 0.26 kg per km, shared by everyone in the car</td></tr>
+        <tr><td>Bus, train, ferry</td><td>0.10, 0.04, 0.12 kg per passenger-km</td></tr>
+        <tr><td>Food</td><td>About ${FOODS.length} foods, each with a typical serving footprint from 0 to 6 kg</td></tr>
+        <tr><td>Hot shower</td><td>9 L a minute, 0.005 to 0.023 kg per litre heated</td></tr>
+        <tr><td>Devices</td><td>Charging energy, plus manufacturing spread over each device's life</td></tr>
+        <tr><td>Clothes and parcels</td><td>10 kg per new item, 4 kg per parcel, 1 kg second-hand</td></tr>
+        <tr><td>Return flights</td><td>250 · 600 · 1000 · 3500 kg by distance</td></tr>
+        <tr><td>Shared services</td><td>${SHARED_KG/1000} t for roads, hospitals, schools, shops and government</td></tr>
+        <tr><td>Fair-share budget</td><td>${BUDGET_T} t per person per year (roughly a 1.5 °C pathway)</td></tr></table></div>
+    <div class="actions noprint"><button class="btn ghost" id="print">🖨️ Print or save as PDF</button><button class="btn ghost" id="restart">← Change my answers</button><button class="btn ghost" id="reset">Start again</button></div>
+  </div>`;
+  window.scrollTo(0,0);
+  buildWhatIf();
+  countUp(document.getElementById('bigNum'), tT);
+}
+
+function countUp(el, target){
+  if(!el || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const dur = 900, t0 = performance.now();
+  const step = t => { const k = Math.min(1,(t-t0)/dur), e = 1-Math.pow(1-k,3);
+    el.textContent = (target*e).toFixed(target >= 1 ? 1 : 2); if(k < 1) requestAnimationFrame(step); else el.textContent = target >= 1 ? target.toFixed(1) : target.toFixed(2); };
+  requestAnimationFrame(step);
+}
+
+let wiItems = [];
+function buildWhatIf(){
+  const base = totalKg(calc());
+  wiItems = WHATIFS.map(w => ({...w, save: base - totalKg(calc({[w.id]:true}))})).filter(w => w.save > 15).sort((a,b) => b.save - a.save);
+  Object.keys(mods).forEach(k => { if(!wiItems.some(i => i.id === k)) delete mods[k]; });
+  const mx = wiItems.length ? wiItems[0].save : 1;
+  document.getElementById('wiList').innerHTML = wiItems.length ? wiItems.map(w => `<label class="wi"><input type="checkbox" data-wi="${w.id}" ${mods[w.id]?'checked':''}>
+      <div><div class="wl">${w.icon} ${esc(w.label)}</div><div class="wb"><i style="width:${w.save/mx*100}%"></i></div></div>
+      <div class="sv">−${T(w.save)} t<small>per year</small></div></label>`).join('')
+    : '<div class="card"><p class="muted" style="margin:0">Your answers leave no big easy wins. Impressive!</p></div>';
+  updateWhatIf();
+}
+function updateWhatIf(){
+  const base = totalKg(calc());
+  const active = Object.keys(mods).length > 0;
+  const nk = active ? totalKg(calc(mods)) : base;
+  const el = document.getElementById('wiSum');
+  if(el) el.innerHTML = active
+    ? `<div class="rw"><div><small>Now</small><div class="big">${T(base)} t</div></div><div style="font-size:1.6rem">→</div><div><small>With your changes</small><div class="big">${T(nk)} t</div></div>
+       <span class="pill">−${Math.round((1-nk/base)*100)}%</span><div><small>Earths</small><div class="big">${(base/1000/BUDGET_T).toFixed(1)} → ${(nk/1000/BUDGET_T).toFixed(1)}</div></div></div>`
+    : `<div class="rw"><div><b>Tick changes below</b> to see what they would do to your footprint.</div></div>`;
+  const cb = document.getElementById('countryBox');
+  if(cb) cb.innerHTML = countryChart(base, active ? nk : null);
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+function setNum(k, v, src){
+  A[k] = v; save();
+  stage.querySelectorAll(`[data-n="${k}"]`).forEach(i => {
+    if(i !== src) i.value = v;
+    if(i.type === 'range') i.style.setProperty('--p', pct(v, +i.min, +i.max));
+  });
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('button,input[type=checkbox]');
+  if(!e.target.closest('.search')) closeAllDD();
+  if(!t) return;
+  const d = t.dataset;
+  if(t.id === 'start'){ view = 0; draw(); }
+  else if(t.id === 'next'){ view = view === PAGES.length-1 ? 'results' : view+1; draw(); }
+  else if(t.id === 'back'){ view = view === 0 ? 'intro' : view-1; draw(); }
+  else if(t.id === 'restart'){ view = PAGES.length-1; draw(); }
+  else if(t.id === 'reset'){ if(confirm('Clear all your answers and start again?')){ A = clone(DEFAULTS); mods = {}; save(); view = 'intro'; draw(); } }
+  else if(t.id === 'print'){ window.print(); }
+  else if(d.tab){ resTab = d.tab;
+    document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === resTab));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + resTab));
+    window.scrollTo({top:document.querySelector('.tabs').offsetTop - 60, behavior:'smooth'}); }
+  else if(d.add){ addFood(d.add, d.id); const i = document.querySelector(`[data-search="${d.add}"]`); if(i) i.focus(); }
+  else if(d.cust){ const [k, kind] = d.cust.split('|'); addCustom(k, kind); }
+  else if(d.qty){ const [k,i,dl] = d.qty.split('|'); const en = A.meals[k][+i]; en.q = Math.max(0.5, Math.min(10, en.q + (+dl)*(en.q <= 1 && +dl < 0 ? 0.5 : en.q < 1 && +dl > 0 ? 0.5 : 1))); refreshMeal(k); }
+  else if(d.rm){ const [k,i] = d.rm.split('|'); A.meals[k].splice(+i,1); refreshMeal(k); }
+  else if(d.k){ A[d.k] = (d.k.endsWith('Scale')) ? +d.v : d.v; save(); draw(true); }
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if(el.dataset.search){ showDD(el.dataset.search); return; }
+  const n = el.dataset.n; if(!n) return;
+  const v = parseFloat(el.value); if(isNaN(v)) return;
+  if(el.type === 'range' || (v >= +el.min && v <= +el.max)) setNum(n, v, el);
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if(el.dataset.n){
+    const v = Math.min(+el.max, Math.max(+el.min, parseFloat(el.value) || +el.min));
+    setNum(el.dataset.n, v); el.value = v;
+  } else if(el.dataset.wi){
+    if(el.checked) mods[el.dataset.wi] = true; else delete mods[el.dataset.wi];
+    updateWhatIf();
+  } else if(el.id === 'sharedToggle'){ A.shared = el.checked; save(); draw(true); }
+});
+document.addEventListener('keydown', e => {
+  const key = e.target.dataset && e.target.dataset.search; if(!key) return;
+  const dd = document.getElementById('dd-' + key);
+  const opts = [...dd.querySelectorAll('.opt')];
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    if(!opts.length) return; e.preventDefault();
+    actIdx[key] = (actIdx[key] + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
+    opts.forEach((o,i) => o.classList.toggle('act', i === actIdx[key]));
+    opts[actIdx[key]].scrollIntoView({block:'nearest'});
+  } else if(e.key === 'Enter'){
+    e.preventDefault(); if(opts[actIdx[key]]) addFood(key, opts[actIdx[key]].dataset.id);
+  } else if(e.key === 'Escape') closeDD(key);
+});
+
+function draw(keepScroll){
+  drawTop(); drawNav();
+  if(view === 'intro') renderIntro();
+  else if(view === 'results') renderResults();
+  else renderPage(view, keepScroll);
+}
+draw();
+</script>
+</body>
+</html>
